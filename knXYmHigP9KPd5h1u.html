@@ -1,0 +1,258 @@
+<html><head><base href="/" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Cards Interactive</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background: linear-gradient(45deg, #6b48ff, #1cb5e0);
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1 {
+    color: white;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    min-height: 200px;
+    perspective: 1000px;
+}
+
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+}
+
+.card.flipped .card-inner {
+    transform: rotateY(180deg);
+}
+
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+}
+
+.card-back {
+    transform: rotateY(180deg);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+}
+
+.subject-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #eee;
+    border-radius: 5px;
+    margin-top: 1rem;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: linear-gradient(45deg, #6b48ff, #1cb5e0);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.add-card {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px dashed white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.new-achievement {
+    animation: pulse 1s infinite;
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cartões de Estudo Interativos</h1>
+        <div class="cards-container" id="cardsContainer">
+            <!-- Cards serão adicionados dinamicamente -->
+        </div>
+    </div>
+
+<script>
+const subjects = [
+    {
+        title: "Matemática",
+        icon: "➗",
+        questions: [
+            {
+                question: "Quanto é 7 x 8?",
+                answer: "56"
+            },
+            {
+                question: "Qual é a raiz quadrada de 64?",
+                answer: "8"
+            }
+        ]
+    },
+    {
+        title: "História",
+        icon: "📚",
+        questions: [
+            {
+                question: "Em que ano foi descoberto o Brasil?",
+                answer: "1500"
+            },
+            {
+                question: "Quem foi o primeiro presidente do Brasil?",
+                answer: "Deodoro da Fonseca"
+            }
+        ]
+    },
+    {
+        title: "Ciências",
+        icon: "🔬",
+        questions: [
+            {
+                question: "Qual é o maior planeta do sistema solar?",
+                answer: "Júpiter"
+            },
+            {
+                question: "Qual é o símbolo químico do ouro?",
+                answer: "Au"
+            }
+        ]
+    }
+];
+
+function createCard(subject) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    
+    const cardInner = document.createElement('div');
+    cardInner.className = 'card-inner';
+    
+    const cardFront = document.createElement('div');
+    cardFront.className = 'card-front';
+    cardFront.innerHTML = `
+        <div class="subject-icon">${subject.icon}</div>
+        <h3 class="card-title">${subject.title}</h3>
+        <p>Clique para estudar</p>
+        <div class="progress-bar">
+            <div class="progress" style="width: 0%"></div>
+        </div>
+    `;
+    
+    const cardBack = document.createElement('div');
+    cardBack.className = 'card-back';
+    
+    let currentQuestionIndex = 0;
+    cardBack.innerHTML = `
+        <div>
+            <h4>${subject.questions[currentQuestionIndex].question}</h4>
+            <button onclick="showAnswer(this)" class="show-answer">Mostrar Resposta</button>
+            <p class="answer" style="display: none">${subject.questions[currentQuestionIndex].answer}</p>
+        </div>
+    `;
+    
+    cardInner.appendChild(cardFront);
+    cardInner.appendChild(cardBack);
+    card.appendChild(cardInner);
+    
+    card.addEventListener('click', () => {
+        card.classList.toggle('flipped');
+    });
+    
+    return card;
+}
+
+function showAnswer(button) {
+    const answer = button.nextElementSibling;
+    if (answer.style.display === 'none') {
+        answer.style.display = 'block';
+        button.textContent = 'Ocultar Resposta';
+    } else {
+        answer.style.display = 'none';
+        button.textContent = 'Mostrar Resposta';
+    }
+}
+
+function initializeCards() {
+    const container = document.getElementById('cardsContainer');
+    subjects.forEach(subject => {
+        container.appendChild(createCard(subject));
+    });
+    
+    // Adicionar card de "Adicionar novo"
+    const addCard = document.createElement('div');
+    addCard.className = 'card add-card';
+    addCard.innerHTML = '+';
+    addCard.addEventListener('click', () => {
+        // Implementação futura: adicionar novo card
+        alert('Funcionalidade de adicionar novo card em desenvolvimento!');
+    });
+    container.appendChild(addCard);
+}
+
+document.addEventListener('DOMContentLoaded', initializeCards);
+</script>
+
+</body></html>
